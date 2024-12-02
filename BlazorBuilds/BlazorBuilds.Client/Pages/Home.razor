@@ -1,0 +1,49 @@
+﻿@using BlazorBuilds.Client.Services
+@using BlazorBuilds.Contracts.Customers
+@using System.Diagnostics
+
+@inject CustomerService _customerService
+
+@page "/"
+
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<p class="mt-4">
+    <button class="btn btn-primary" @onclick="CustomerSearch">Call Grpc Service</button>
+    <button class="btn btn-warning" @onclick="ClearResults">Clear Results</button>
+</p>
+
+<ul class="mt-4">
+    @foreach (var result in _searchResults)
+    {
+        <li>@result.ToString()</li>
+    }
+</ul>
+<p class="mt-4 fw-bold">@_timingMessage</p>
+
+
+@code{
+    private List<CustomerSearchResult> _searchResults = [];
+    private string                     _timingMessage = String.Empty;
+
+    private async Task CustomerSearch()
+    {
+        var startEvalTicks = Stopwatch.GetTimestamp();
+        var searchResponse = await _customerService.CustomerSearch("ALFKI");//Northwind lives!
+        var endEvalTicks   = Stopwatch.GetTimestamp();
+        
+        _searchResults = searchResponse.SearchResults.ToList();
+        _timingMessage = $"Time taken: {(endEvalTicks - startEvalTicks) / (Stopwatch.Frequency / 1_000)}ms";
+    }
+
+    private void ClearResults()
+    {
+        _timingMessage = String.Empty;
+        _searchResults.Clear();
+    }
+}
